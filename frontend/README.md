@@ -2,6 +2,8 @@
 
 The TuneWave frontend is a single-page web application built with React 19 and Vite. It delivers a brutalist, audio-first user interface featuring interactive canvas audio visualizers, dynamic 4-album playlist collages, real-time shared room synchronization, and low-latency audio streaming.
 
+- **Deployed Backend API (Render)**: [https://tunewave-backend-major-project.onrender.com](https://tunewave-backend-major-project.onrender.com)
+
 ---
 
 ## Table of Contents

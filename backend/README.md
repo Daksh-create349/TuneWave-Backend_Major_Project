@@ -2,6 +2,9 @@
 
 TuneWave is a music streaming backend service built with Node.js, Express, MongoDB, Firebase Authentication, JWT, and Socket.io. It supports audio streaming and image serving via local static storage for prototype demonstration without requiring external paid cloud buckets.
 
+- **Live Render Base URL**: [https://tunewave-backend-major-project.onrender.com](https://tunewave-backend-major-project.onrender.com)
+- **Health Check**: `GET https://tunewave-backend-major-project.onrender.com/`
+
 ---
 
 ## Architecture Overview
