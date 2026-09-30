@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.log
+.DS_Store
+
+config/serviceAccountKey.json
+
+uploads/audio/*
+!uploads/audio/.gitkeep
+uploads/album-art/*
+!uploads/album-art/.gitkeep
+uploads/artist-images/*
+!uploads/artist-images/.gitkeep

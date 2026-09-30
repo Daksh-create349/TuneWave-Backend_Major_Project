@@ -1,0 +1,100 @@
+:root {
+  --bg-black: #080808;
+  --bg-card: #121212;
+  --bg-white: #f5f5f1;
+  --bg-yellow: #ffe600;
+  --bg-lime: #8ace00;
+  --bg-red: #ff233b;
+
+  --text-white: #f8f8f8;
+  --text-dark: #0a0a0a;
+  --text-dim: #777777;
+
+  --border-light: rgba(255, 255, 255, 0.18);
+  --border-solid: #ffffff;
+  --border-black: #080808;
+
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'Space Grotesk', -apple-system, sans-serif;
+  --font-display: 'Syne', sans-serif;
+  --font-serif: 'Instrument Serif', serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--bg-black);
+  color: var(--text-white);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.35;
+}
+
+/* Custom Selection */
+::selection {
+  background: var(--bg-lime);
+  color: #000;
+}
+
+/* Smooth Mono Utilities */
+.mono {
+  font-family: var(--font-mono);
+}
+
+.serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Ticker Marquee Animation */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 24s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Spin animation for vinyl */
+@keyframes spin-vinyl {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-record {
+  animation: spin-vinyl 14s linear infinite;
+}
+
+.animate-spin-paused {
+  animation-play-state: paused !important;
+}
+
+/* Equalizer Bars */
+@keyframes jump-bar {
+  0%, 100% { height: 15%; }
+  50% { height: 95%; }
+}
+
+.eq-bar-jump {
+  animation: jump-bar 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}

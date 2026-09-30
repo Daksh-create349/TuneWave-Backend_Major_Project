@@ -1,0 +1,846 @@
+{
+  "info": {
+    "_postman_id": "tunewave-backend-collection",
+    "name": "TuneWave API",
+    "description": "Comprehensive test suite for TuneWave Music Streaming Backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "songId",
+      "value": "6abbb274535867a70ba05675",
+      "type": "string"
+    },
+    {
+      "key": "createdSongId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "artistId",
+      "value": "6abbb1f2535867a70ba05661",
+      "type": "string"
+    },
+    {
+      "key": "playlistId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            ""
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response returns running message', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.eql('TuneWave API is running');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.environment.set('testEmail', `pm_user_${timestamp}@example.com`);",
+                  "pm.environment.set('testPassword', `Pass@${timestamp}`);",
+                  "pm.environment.set('testName', `Postman Tester ${timestamp}`);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Returns JWT token and user info', function () {",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData.user).to.be.an('object');",
+                  "    pm.expect(jsonData.user.email).to.eql(pm.environment.get('testEmail'));",
+                  "});",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "    pm.environment.set('userId', jsonData.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"{{testName}}\", \"email\": \"{{testEmail}}\", \"password\": \"{{testPassword}}\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Returns valid auth token and user', function () {",
+                  "    pm.expect(jsonData.token).to.be.a('string');",
+                  "    pm.expect(jsonData.user.id).to.eql(pm.environment.get('userId'));",
+                  "});",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{testEmail}}\", \"password\": \"{{testPassword}}\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Songs",
+      "item": [
+        {
+          "name": "Get All Songs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Returned array of songs with local URLs and populated artist', function () {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData.length).to.be.at.least(10);",
+                  "    pm.expect(jsonData[0].artist.name).to.be.a('string');",
+                  "    pm.expect(jsonData[0].audioUrl).to.include('/uploads/audio/');",
+                  "});",
+                  "if (jsonData.length > 0) {",
+                  "    pm.environment.set('songId', jsonData[0]._id);",
+                  "    pm.environment.set('artistId', jsonData[0].artist._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/songs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "songs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Song By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Song details match requested ID', function () {",
+                  "    pm.expect(jsonData._id).to.eql(pm.environment.get('songId'));",
+                  "    pm.expect(jsonData.title).to.be.a('string');",
+                  "    pm.expect(jsonData.audioUrl).to.include('/uploads/audio/');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/songs/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "songs",
+                "{{songId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Songs (keyword=lofi)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Found matching song(s)', function () {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData.length).to.be.at.least(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/songs/search?keyword=lofi",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "songs",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "lofi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Song (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Song created with local URLs', function () {",
+                  "    pm.expect(jsonData.song).to.be.an('object');",
+                  "    pm.expect(jsonData.song.title).to.eql('Postman Test Anthem');",
+                  "    pm.expect(jsonData.song.audioUrl).to.include('/uploads/audio/');",
+                  "});",
+                  "if (jsonData.song) {",
+                  "    pm.environment.set('createdSongId', jsonData.song._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Postman Test Anthem\", \"artist\": \"{{artistId}}\", \"album\": \"Postman Suite\", \"genre\": \"Electronic\", \"duration\": 210, \"audioUrl\": \"/uploads/audio/husn.mp3\", \"albumArtUrl\": \"/uploads/album-art/husn.jpg\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/songs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "songs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Song (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Song updated successfully', function () {",
+                  "    pm.expect(jsonData.song.title).to.eql('Updated Anthem');",
+                  "    pm.expect(jsonData.song.duration).to.eql(225);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Updated Anthem\", \"duration\": 225}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/songs/{{createdSongId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "songs",
+                "{{createdSongId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Like or Unlike Song (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Like toggled successfully', function () {",
+                  "    pm.expect(jsonData.message).to.be.oneOf(['Song liked', 'Song unliked']);",
+                  "    pm.expect(jsonData.isLiked).to.be.a('boolean');",
+                  "    pm.expect(jsonData.likes).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/songs/{{songId}}/like",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "songs",
+                "{{songId}}",
+                "like"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Song (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Song deleted message', function () {",
+                  "    pm.expect(jsonData.message).to.eql('Song deleted successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/songs/{{createdSongId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "songs",
+                "{{createdSongId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Playlists",
+      "item": [
+        {
+          "name": "Create Playlist (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Playlist created and populated', function () {",
+                  "    pm.expect(jsonData.playlist).to.be.an('object');",
+                  "    pm.expect(jsonData.playlist.name).to.eql('Postman Test Playlist');",
+                  "    pm.expect(jsonData.playlist.songs).to.be.an('array');",
+                  "});",
+                  "if (jsonData.playlist) {",
+                  "    pm.environment.set('playlistId', jsonData.playlist._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Postman Test Playlist\", \"songs\": [\"{{songId}}\"]}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/playlists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "playlists"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Playlists (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('User playlists returned as array containing created playlist', function () {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    var found = jsonData.some(p => p._id === pm.environment.get('playlistId'));",
+                  "    pm.expect(found).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/playlists/user/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "playlists",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Playlist (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Playlist name updated', function () {",
+                  "    pm.expect(jsonData.playlist.name).to.eql('Renamed Postman Playlist');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Renamed Postman Playlist\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/playlists/{{playlistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "playlists",
+                "{{playlistId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Artists",
+      "item": [
+        {
+          "name": "Get Artist By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Artist returned with local imageUrl', function () {",
+                  "    pm.expect(jsonData._id).to.eql(pm.environment.get('artistId'));",
+                  "    pm.expect(jsonData.name).to.be.a('string');",
+                  "    pm.expect(jsonData.imageUrl).to.include('/uploads/artist-images/');",
+                  "});",
+                  "pm.environment.set('initialFollowers', jsonData.followers);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/{{artistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artists",
+                "{{artistId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Follow Artist (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Followers incremented', function () {",
+                  "    pm.expect(jsonData.artist.followers).to.eql(pm.environment.get('initialFollowers') + 1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/{{artistId}}/follow",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artists",
+                "{{artistId}}",
+                "follow"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Media Serving",
+      "item": [
+        {
+          "name": "Get Audio File",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Content-Type is audio/mpeg', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('audio');",
+                  "});",
+                  "pm.test('Accept-Ranges byte streaming supported', function () {",
+                  "    pm.expect(pm.response.headers.get('Accept-Ranges')).to.eql('bytes');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/uploads/audio/tum-hi-ho.mp3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "audio",
+                "tum-hi-ho.mp3"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Album Art",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Content-Type is image/jpeg', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('image');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/uploads/album-art/tum-hi-ho.jpg",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "album-art",
+                "tum-hi-ho.jpg"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Artist Image",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Content-Type is image/jpeg', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('image');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/uploads/artist-images/arijit-singh.jpg",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "artist-images",
+                "arijit-singh.jpg"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
