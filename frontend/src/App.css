@@ -3409,6 +3409,13 @@
   box-shadow: 0 6px 22px rgba(138, 206, 0, 0.45);
 }
 
+.btn-rnp-broadcast.broadcast-active {
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.7) !important;
+  transform: scale(1.05);
+}
+
 .btn-rnp-leave {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);

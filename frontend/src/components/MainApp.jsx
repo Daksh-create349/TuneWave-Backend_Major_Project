@@ -201,6 +201,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
   const [roomListeners, setRoomListeners] = useState(1);
   const [syncStatus, setSyncStatus] = useState('offline');
   const [roomNowPlaying, setRoomNowPlaying] = useState(null);
+  const [broadcastFeedback, setBroadcastFeedback] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [listeningHistory, setListeningHistory] = useState([]);
 
@@ -357,10 +358,26 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
       if (!data) return;
       setRoomNowPlaying(data);
 
-      // Avoid self-echo loop
+      // Avoid self-echo loop for the sender
       if (data.senderId && data.senderId === newSocket.id) {
         return;
       }
+
+      const applyAudioSync = () => {
+        if (audioRef.current && typeof data.currentTime === 'number') {
+          if (Math.abs(audioRef.current.currentTime - data.currentTime) > 1.2) {
+            audioRef.current.currentTime = data.currentTime;
+          }
+        }
+        if (data.isPlaying) {
+          audioRef.current?.play().then(() => setIsPlaying(true)).catch((e) => {
+            console.log('Autoplay deferred until user interaction:', e);
+          });
+        } else {
+          audioRef.current?.pause();
+          setIsPlaying(false);
+        }
+      };
 
       if (data.songId) {
         const curSong = currentSongRef.current;
@@ -368,22 +385,25 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
           const target = songsRef.current.find((s) => s._id === data.songId);
           if (target) {
             setCurrentSong(target);
+            currentSongRef.current = target;
+            if (audioRef.current) {
+              const src = target.audioUrl.startsWith('http') ? target.audioUrl : `${API_BASE}${target.audioUrl}`;
+              if (audioRef.current.src !== src) {
+                audioRef.current.src = src;
+                const onCanPlay = () => {
+                  audioRef.current?.removeEventListener('canplay', onCanPlay);
+                  applyAudioSync();
+                };
+                audioRef.current.addEventListener('canplay', onCanPlay);
+                audioRef.current.load();
+                return;
+              }
+            }
           }
         }
       }
 
-      if (audioRef.current && typeof data.currentTime === 'number') {
-        if (Math.abs(audioRef.current.currentTime - data.currentTime) > 1.2) {
-          audioRef.current.currentTime = data.currentTime;
-        }
-      }
-
-      if (data.isPlaying) {
-        audioRef.current?.play().then(() => setIsPlaying(true)).catch(() => {});
-      } else {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      }
+      applyAudioSync();
     };
 
     newSocket.on('roomState', handleIncomingSync);
@@ -521,8 +541,8 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
     playSong(activeList[prevIdx], true);
   };
 
-  const broadcastState = (playingState, songOverride, seekTime) => {
-    const room = currentRoomRef.current;
+  const broadcastState = (playingState, songOverride, seekTime, roomOverride) => {
+    const room = roomOverride || currentRoomRef.current;
     const song = songOverride || currentSongRef.current;
     if (socket && room && song) {
       const payload = {
@@ -532,7 +552,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
         artist: song.artist?.name || 'Artist',
         albumArtUrl: song.albumArtUrl,
         currentTime: typeof seekTime === 'number' ? seekTime : (audioRef.current?.currentTime || 0),
-        isPlaying: playingState
+        isPlaying: Boolean(playingState)
       };
       setRoomNowPlaying(payload);
       socket.emit('nowPlaying', payload);
@@ -544,8 +564,9 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
     const cleanId = roomId.trim().toLowerCase();
     socket.emit('joinRoom', cleanId);
     setCurrentRoom(cleanId);
+    currentRoomRef.current = cleanId;
     setRoomListeners(1);
-    broadcastState(isPlaying);
+    broadcastState(isPlaying, null, null, cleanId);
   };
 
   const handleLeaveRoom = () => {
@@ -1523,16 +1544,18 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                     <div className="rnp-actions-col">
                       <button
                         type="button"
-                        className="btn-rnp-broadcast"
+                        className={`btn-rnp-broadcast ${broadcastFeedback ? 'broadcast-active' : ''}`}
                         onClick={() => {
                           if (currentSong) {
                             broadcastState(isPlaying, currentSong, audioRef.current?.currentTime || 0);
+                            setBroadcastFeedback(true);
+                            setTimeout(() => setBroadcastFeedback(false), 2500);
                           }
                         }}
                         title="Broadcast your current track to all room listeners"
                       >
                         <Radio size={14} />
-                        <span>Broadcast My Track</span>
+                        <span>{broadcastFeedback ? 'Track Broadcasted!' : 'Broadcast My Track'}</span>
                       </button>
 
                       <button
