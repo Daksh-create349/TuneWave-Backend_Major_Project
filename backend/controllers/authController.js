@@ -28,14 +28,49 @@ const registerUser = async (req, res) => {
             });
         }
 
-        const firebaseUser = await firebaseAuth.createUser({
-            email,
-            password,
-            displayName: name.trim()
-        });
+        let firebaseUid;
+
+        if (firebaseAuth) {
+            const firebaseUser = await firebaseAuth.createUser({
+                email,
+                password,
+                displayName: name.trim()
+            });
+            firebaseUid = firebaseUser.uid;
+        } else {
+            // Fallback to Firebase Identity Toolkit REST API using FIREBASE_API_KEY
+            const fbRes = await fetch(
+                `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.FIREBASE_API_KEY}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        displayName: name.trim(),
+                        returnSecureToken: true
+                    })
+                }
+            );
+
+            const fbData = await fbRes.json();
+
+            if (!fbRes.ok) {
+                if (fbData.error?.message === "EMAIL_EXISTS") {
+                    return res.status(400).json({
+                        message: "Email is already registered in Firebase"
+                    });
+                }
+                return res.status(400).json({
+                    message: fbData.error?.message || "Registration failed"
+                });
+            }
+
+            firebaseUid = fbData.localId;
+        }
 
         const user = await User.create({
-            firebaseUid: firebaseUser.uid,
+            firebaseUid,
             name: name.trim(),
             email,
             likedSongs: [],
@@ -45,7 +80,7 @@ const registerUser = async (req, res) => {
         const token = jwt.sign(
             {
                 userId: user._id,
-                firebaseUid: firebaseUser.uid
+                firebaseUid
             },
             process.env.JWT_SECRET,
             {
@@ -59,7 +94,7 @@ const registerUser = async (req, res) => {
             user: {
                 id: user._id,
                 _id: user._id,
-                firebaseUid: firebaseUser.uid,
+                firebaseUid,
                 name: user.name,
                 email: user.email,
                 likedSongs: user.likedSongs || [],
@@ -79,7 +114,6 @@ const registerUser = async (req, res) => {
         });
     }
 };
-
 
 const loginUser = async (req, res) => {
     try {
@@ -116,24 +150,41 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const decodedToken = await firebaseAuth.verifyIdToken(
-            firebaseData.idToken
-        );
+        let firebaseUid = firebaseData.localId;
 
-        const user = await User.findOne({
-            firebaseUid: decodedToken.uid
+        if (firebaseAuth && firebaseData.idToken) {
+            try {
+                const decodedToken = await firebaseAuth.verifyIdToken(
+                    firebaseData.idToken
+                );
+                firebaseUid = decodedToken.uid;
+            } catch (err) {
+                console.warn("verifyIdToken skipped or failed:", err.message);
+            }
+        }
+
+        let user = await User.findOne({
+            $or: [{ firebaseUid }, { email }]
         });
 
         if (!user) {
-            return res.status(404).json({
-                message: "User profile not found in database"
+            // Auto-create local MongoDB record for authenticated Firebase user
+            user = await User.create({
+                firebaseUid,
+                name: firebaseData.displayName || email.split("@")[0],
+                email,
+                likedSongs: [],
+                followedArtists: []
             });
+        } else if (!user.firebaseUid || user.firebaseUid !== firebaseUid) {
+            user.firebaseUid = firebaseUid;
+            await user.save();
         }
 
         const token = jwt.sign(
             {
                 userId: user._id,
-                firebaseUid: decodedToken.uid
+                firebaseUid
             },
             process.env.JWT_SECRET,
             {
@@ -147,7 +198,7 @@ const loginUser = async (req, res) => {
             user: {
                 id: user._id,
                 _id: user._id,
-                firebaseUid: decodedToken.uid,
+                firebaseUid,
                 name: user.name,
                 email: user.email,
                 likedSongs: user.likedSongs || [],
