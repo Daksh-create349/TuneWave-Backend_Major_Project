@@ -110,38 +110,20 @@ flowchart LR
 
 ## Frontend to Backend Integration
 
+The following flowchart illustrates how the frontend connects to the backend services:
+
 ```mermaid
-sequenceDiagram
-    autonumber
-    participant UI as React UI Component
-    participant Storage as localStorage
-    participant API as Fetch API Service
-    participant Backend as Express API (Port 8000)
-    participant Socket as Socket.io Client
+flowchart LR
+    Client["React Frontend"]
+    AuthService["Auth API (Firebase + JWT)"]
+    SongService["Song & Playlist API"]
+    MediaService["Local Audio & Art Streaming"]
+    SocketService["Socket.io Shared Rooms"]
 
-    Note over UI,Backend: Authentication & Token Header
-    UI->>API: POST /api/auth/login { email, password }
-    API->>Backend: HTTP POST
-    Backend-->>API: { token, user: { id, email, name, likedSongs } }
-    API->>Storage: setItem('token', token)
-    API->>UI: Update Auth State
-
-    Note over UI,Backend: Authenticated API Requests
-    UI->>Storage: getItem('token')
-    Storage-->>UI: token
-    UI->>API: GET /api/songs (Header: Authorization: Bearer token)
-    API->>Backend: HTTP GET with Bearer token
-    Backend-->>UI: Song array populated with artists
-
-    Note over UI,Backend: Audio Media Streaming
-    UI->>Backend: GET /uploads/audio/track.mp3 (HTTP Range: bytes=0-)
-    Backend-->>UI: HTTP 206 Partial Content (Seekable stream)
-
-    Note over UI,Socket: Real-Time Listening Rooms
-    UI->>Socket: emit('joinRoom', roomId)
-    Socket->>Backend: Join Room Request
-    Backend-->>Socket: emit('userJoined', listenerCount)
-    Socket-->>UI: Update Live Room State
+    Client -->|Login & Register| AuthService
+    Client -->|Browse & Manage Crates| SongService
+    Client -->|Stream Audio Tracks| MediaService
+    Client <-->|Live Playback Sync| SocketService
 ```
 
 ### API Client and JWT Storage

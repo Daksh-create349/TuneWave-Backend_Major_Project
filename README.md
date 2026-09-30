@@ -30,55 +30,25 @@ TuneWave is a full-stack, high-fidelity music streaming application and collabor
 
 ## System Architecture
 
-The following diagram illustrates the interaction between client applications, security layers, the Node.js server, MongoDB persistence, and the real-time Socket.io engine.
+The following flowchart illustrates the high-level architecture of TuneWave:
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer["Frontend Client (React 19 + Vite)"]
-        UI["UI Components & Brutalist Views"]
-        AudioEngine["HTML5 Audio & Web Audio API Visualizer"]
-        SocketClient["Socket.io Client"]
-        AuthStorage["Local Storage (JWT & Session)"]
-    end
+    Client["React 19 Frontend"]
+    Server["Express.js Server"]
+    DB[("MongoDB Database")]
+    Storage["Local Media Storage"]
+    Auth["Firebase Auth & JWT"]
+    Socket["Socket.io Live Sync"]
 
-    subgraph GatewayLayer["API Gateway & Middleware"]
-        CORS["CORS Handler"]
-        AuthMid["JWT Auth Middleware"]
-        UploadMid["Multer Multi-Part Parser"]
-        StaticServe["Express Static File Server (HTTP Range)"]
-    end
+    Client -->|REST API & Bearer Token| Server
+    Client -->|Audio Streaming| Storage
+    Client <-->|Real-Time Rooms| Socket
 
-    subgraph ServiceLayer["Express.js Controllers"]
-        AuthController["Auth Controller"]
-        SongController["Song Controller"]
-        PlaylistController["Playlist Controller"]
-        ArtistController["Artist Controller"]
-        RoomManager["Socket.io Room Manager"]
-    end
-
-    subgraph StorageLayer["Data & Persistence"]
-        Mongo["MongoDB Database (Mongoose ODM)"]
-        LocalFS["Local Disk Storage (Audio & Artwork)"]
-        FirebaseAuth["Firebase Identity Toolkit"]
-    end
-
-    UI -->|REST Requests + Bearer Token| CORS
-    CORS --> AuthMid
-    AuthMid --> ServiceLayer
-    UI -->|Upload Audio & Art| UploadMid
-    UploadMid --> SongController
-    SongController --> LocalFS
-
-    AudioEngine -->|Stream Audio (Range: bytes)| StaticServe
-    StaticServe --> LocalFS
-
-    SocketClient <-->|Bidirectional WebSockets| RoomManager
-
-    AuthController <-->|Verify ID Tokens| FirebaseAuth
-    AuthController <-->|User Profile & Liked Tracks| Mongo
-    SongController <-->|Song Metadata & Plays| Mongo
-    PlaylistController <-->|User Playlists & Unique Names| Mongo
-    ArtistController <-->|Artist Profiles & Followers| Mongo
+    Server --> DB
+    Server --> Auth
+    Server --> Storage
+    Server --> Socket
 ```
 
 ---
@@ -110,43 +80,25 @@ flowchart TD
 
 ## Frontend to Backend Integration
 
+The following flowchart shows how the frontend communicates with the backend:
+
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor User as User Browser
-    participant Front as Frontend (React 19)
-    participant Server as Express Backend
-    participant Auth as Firebase / JWT
-    participant DB as MongoDB
-    participant Socket as Socket.io Engine
+flowchart LR
+    subgraph Client["Frontend Client"]
+        UI["React UI"]
+        Audio["Audio Player"]
+        WS["Socket Client"]
+    end
 
-    Note over User,Front: 1. User Authentication
-    User->>Front: Enter credentials (email, password)
-    Front->>Server: POST /api/auth/login
-    Server->>Auth: Verify credentials via Identity Toolkit
-    Auth-->>Server: User verified
-    Server->>DB: Fetch or create User profile
-    DB-->>Server: User record
-    Server-->>Front: Return JWT token & user object
-    Front->>Front: Persist token to localStorage
+    subgraph Server["Backend Server"]
+        API["Express REST API"]
+        Static["Static Media Server"]
+        Hub["Socket.io Rooms"]
+    end
 
-    Note over User,Front: 2. Fetch Catalog & Scoped Playlists
-    Front->>Server: GET /api/songs (Header: Bearer JWT)
-    Server->>DB: Query songs with populated artist
-    DB-->>Server: Song list
-    Server-->>Front: Return song array
-
-    Note over User,Front: 3. Streaming Audio
-    Front->>Server: GET /uploads/audio/track.mp3 (Range: bytes=0-)
-    Server-->>Front: HTTP 206 Partial Content (Audio Stream)
-    Front->>Front: Feed audio element & Web Audio AnalyserNode
-
-    Note over User,Front: 4. Real-Time Room Sync
-    Front->>Socket: emit('joinRoom', roomId)
-    Socket-->>Front: emit('userJoined', listenerCount)
-    User->>Front: Seek / Play / Pause
-    Front->>Socket: emit('nowPlaying', { songId, currentTime, isPlaying })
-    Socket-->>Front: Broadcast to other room participants
+    UI -->|Auth & Metadata Requests| API
+    Audio -->|Audio Streaming| Static
+    WS <-->|Real-Time Sync| Hub
 ```
 
 ### Authentication and Authorization Flow
