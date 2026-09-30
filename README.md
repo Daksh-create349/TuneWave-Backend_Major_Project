@@ -2,6 +2,7 @@
 
 TuneWave is a full-stack, high-fidelity music streaming application and collaborative listening platform. The application combines a brutalist audio-first aesthetic with a robust micro-service inspired REST architecture, local static media streaming, Firebase and JWT hybrid authentication, and real-time room synchronization powered by WebSockets.
 
+- **Live Frontend Application (Vercel)**: [https://tune-wave-backend-major-project.vercel.app](https://tune-wave-backend-major-project.vercel.app)
 - **Live Backend API (Render)**: [https://tunewave-backend-major-project.onrender.com](https://tunewave-backend-major-project.onrender.com)
 - **API Status Endpoint**: [https://tunewave-backend-major-project.onrender.com/](https://tunewave-backend-major-project.onrender.com/)
 
