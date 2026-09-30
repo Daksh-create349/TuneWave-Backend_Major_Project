@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, User, Mail, Lock, CheckCircle2, LogOut } from 'lucide-react';
+import { API_BASE } from '../config/api';
 
 export default function AuthPage({ initialMode = 'login', onBack, currentUser, onAuthSuccess, onContinueToApp, onLogout }) {
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
@@ -48,8 +49,8 @@ export default function AuthPage({ initialMode = 'login', onBack, currentUser, o
 
     try {
       const endpoint = mode === 'signup'
-        ? 'http://localhost:8000/api/auth/register'
-        : 'http://localhost:8000/api/auth/login';
+        ? `${API_BASE}/api/auth/register`
+        : `${API_BASE}/api/auth/login`;
 
       const payload = mode === 'signup'
         ? { email, password, name }

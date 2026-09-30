@@ -13,8 +13,7 @@ import {
   Disc3
 } from 'lucide-react';
 import PlaylistCollage from './PlaylistCollage';
-
-const API_BASE = 'http://localhost:8000';
+import { API_BASE } from '../config/api';
 
 const formatSeconds = (sec) => {
   if (!sec || isNaN(sec)) return '0:00';

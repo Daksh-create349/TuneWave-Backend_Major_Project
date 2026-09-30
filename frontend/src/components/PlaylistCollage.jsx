@@ -1,7 +1,6 @@
 import React from 'react';
 import { Disc3 } from 'lucide-react';
-
-const API_BASE = 'http://localhost:8000';
+import { API_BASE } from '../config/api';
 
 const resolveArtUrl = (url) => {
   if (!url) return `${API_BASE}/uploads/album-art/blinding-lights.jpg`;

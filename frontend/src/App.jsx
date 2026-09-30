@@ -8,6 +8,7 @@ import BrutalistFooter from './components/BrutalistFooter';
 import AuthPage from './components/AuthPage';
 import MainApp from './components/MainApp';
 import { DEFAULT_THEME } from './data/themes';
+import { API_BASE } from './config/api';
 import './App.css';
 
 export default function App() {
@@ -74,7 +75,7 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem('tunewave_token');
     if (token) {
-      fetch('http://localhost:8000/api/auth/me', {
+      fetch(`${API_BASE}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then((res) => {

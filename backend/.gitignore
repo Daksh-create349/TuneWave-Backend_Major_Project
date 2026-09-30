@@ -5,9 +5,6 @@ node_modules/
 
 config/serviceAccountKey.json
 
-uploads/audio/*
-!uploads/audio/.gitkeep
-uploads/album-art/*
-!uploads/album-art/.gitkeep
-uploads/artist-images/*
-!uploads/artist-images/.gitkeep
+# Ignore temporary upload files but allow tracked audio and artwork
+uploads/**/temp-*
+uploads/scratch/

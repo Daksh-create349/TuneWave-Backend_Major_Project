@@ -29,8 +29,7 @@ import MaximizedPlayer from './MaximizedPlayer';
 import PlaylistCollage from './PlaylistCollage';
 import PlaylistDetailView from './PlaylistDetailView';
 import { DEFAULT_THEME } from '../data/themes';
-
-const API_BASE = 'http://localhost:8000';
+import { API_BASE } from '../config/api';
 
 export default function MainApp({ currentUser, onBackToLanding, onLogout, activeTheme, onSelectTheme }) {
   const getInitialTab = () => {
