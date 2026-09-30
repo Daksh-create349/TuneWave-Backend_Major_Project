@@ -51,7 +51,7 @@ export default function MaximizedPlayer({
 
   const artSrc = currentSong?.albumArtUrl
     ? (currentSong.albumArtUrl.startsWith('http') ? currentSong.albumArtUrl : `${API_BASE}${currentSong.albumArtUrl}`)
-    : '/uploads/album-art/blinding-lights.jpg';
+    : `${API_BASE}/uploads/album-art/blinding-lights.jpg`;
 
   const formatTime = (secs) => {
     if (!secs || isNaN(secs)) return '0:00';

@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, Flame, Disc3, Radio, Plus, Check } from 'lucide-react';
+import { API_BASE } from '../config/api';
 
 export default function PosterGrid() {
   const [activeTab, setActiveTab] = useState('for-you');
 
   const artists = [
-    { name: 'Billie Eilish', genre: 'Dark Pop', img: '/uploads/artist-images/billie-eilish.jpg' },
-    { name: 'The Weeknd', genre: 'Synthwave', img: '/uploads/artist-images/the-weeknd.jpg' },
-    { name: 'Diljit Dosanjh', genre: 'Punjabi', img: '/uploads/artist-images/diljit-dosanjh.jpg' },
-    { name: 'Arijit Singh', genre: 'Soulful', img: '/uploads/artist-images/arijit-singh.jpg' },
-    { name: 'Anuv Jain', genre: 'Lo-Fi', img: '/uploads/artist-images/anuv-jain.jpg' }
+    { name: 'Billie Eilish', genre: 'Dark Pop', img: `${API_BASE}/uploads/artist-images/billie-eilish.jpg` },
+    { name: 'The Weeknd', genre: 'Synthwave', img: `${API_BASE}/uploads/artist-images/the-weeknd.jpg` },
+    { name: 'Diljit Dosanjh', genre: 'Punjabi', img: `${API_BASE}/uploads/artist-images/diljit-dosanjh.jpg` },
+    { name: 'Arijit Singh', genre: 'Soulful', img: `${API_BASE}/uploads/artist-images/arijit-singh.jpg` },
+    { name: 'Anuv Jain', genre: 'Lo-Fi', img: `${API_BASE}/uploads/artist-images/anuv-jain.jpg` }
   ];
 
   const crateTracks = [
-    { title: 'Tum Hi Ho', artist: 'Arijit Singh', album: 'Aashiqui 2', time: '04:22', art: '/uploads/album-art/tum-hi-ho.jpg' },
-    { title: 'Anti-Hero', artist: 'Taylor Swift', album: 'Midnights', time: '03:20', art: '/uploads/album-art/anti-hero.jpg' },
-    { title: 'Husn', artist: 'Anuv Jain', album: 'Independent', time: '03:38', art: '/uploads/album-art/husn.jpg' },
-    { title: 'Yellow', artist: 'Coldplay', album: 'Parachutes', time: '04:26', art: '/uploads/album-art/yellow.jpg' }
+    { title: 'Tum Hi Ho', artist: 'Arijit Singh', album: 'Aashiqui 2', time: '04:22', art: `${API_BASE}/uploads/album-art/tum-hi-ho.jpg` },
+    { title: 'Anti-Hero', artist: 'Taylor Swift', album: 'Midnights', time: '03:20', art: `${API_BASE}/uploads/album-art/anti-hero.jpg` },
+    { title: 'Husn', artist: 'Anuv Jain', album: 'Independent', time: '03:38', art: `${API_BASE}/uploads/album-art/husn.jpg` },
+    { title: 'Yellow', artist: 'Coldplay', album: 'Parachutes', time: '04:26', art: `${API_BASE}/uploads/album-art/yellow.jpg` }
   ];
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Play, Pause, Disc, Volume2, VolumeX, Sparkles, ArrowDownRight } from 'lucide-react';
+import { API_BASE } from '../config/api';
 
 export default function BrutalistHero() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -20,7 +21,7 @@ export default function BrutalistHero() {
       {/* Hidden Audio Player for real audio */}
       <audio
         ref={audioRef}
-        src="/uploads/audio/blinding-lights.mp3"
+        src={`${API_BASE}/uploads/audio/blinding-lights.mp3`}
         onEnded={() => setIsPlaying(false)}
         preload="none"
       />
@@ -41,7 +42,7 @@ export default function BrutalistHero() {
         <div className="lp-sleeve-jacket">
           <div className="sleeve-artwork">
             <img
-              src="/uploads/album-art/blinding-lights.jpg"
+              src={`${API_BASE}/uploads/album-art/blinding-lights.jpg`}
               alt="The Weeknd After Hours Sleeve"
               onError={(e) => {
                 e.target.src = 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=600&q=80';
@@ -60,7 +61,7 @@ export default function BrutalistHero() {
 
           <div className="vinyl-center-sticker">
             <img
-              src="/uploads/album-art/blinding-lights.jpg"
+              src={`${API_BASE}/uploads/album-art/blinding-lights.jpg`}
               alt="Center Sticker"
             />
             <div className="center-hole"></div>

@@ -427,6 +427,11 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
   const togglePlay = () => {
     if (!audioRef.current || !currentSong) return;
     initWebAudio();
+    const src = currentSong.audioUrl?.startsWith('http') ? currentSong.audioUrl : `${API_BASE}${currentSong.audioUrl}`;
+    if (!audioRef.current.src || !audioRef.current.src.includes(currentSong.audioUrl)) {
+      audioRef.current.src = src;
+      audioRef.current.load();
+    }
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -763,6 +768,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
       {/* Hidden Audio Engine */}
       <audio
         ref={audioRef}
+        src={currentAudioSrc}
         crossOrigin="anonymous"
         onTimeUpdate={onTimeUpdate}
         onLoadedMetadata={onLoadedMetadata}
@@ -876,7 +882,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                     {/* The Cardboard LP Jacket */}
                     <div className="lp-jacket-box">
                       <img
-                        src={currentSong.albumArtUrl ? (currentSong.albumArtUrl.startsWith('http') ? currentSong.albumArtUrl : `${API_BASE}${currentSong.albumArtUrl}`) : '/uploads/album-art/blinding-lights.jpg'}
+                        src={currentSong.albumArtUrl ? (currentSong.albumArtUrl.startsWith('http') ? currentSong.albumArtUrl : `${API_BASE}${currentSong.albumArtUrl}`) : `${API_BASE}/uploads/album-art/blinding-lights.jpg`}
                         alt={currentSong.title}
                         className="lp-artwork-img"
                       />
@@ -890,7 +896,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                       <div className="vinyl-ring r-3"></div>
                       <div className="vinyl-center-sticker">
                         <img
-                          src={currentSong.albumArtUrl ? (currentSong.albumArtUrl.startsWith('http') ? currentSong.albumArtUrl : `${API_BASE}${currentSong.albumArtUrl}`) : '/uploads/album-art/blinding-lights.jpg'}
+                          src={currentSong.albumArtUrl ? (currentSong.albumArtUrl.startsWith('http') ? currentSong.albumArtUrl : `${API_BASE}${currentSong.albumArtUrl}`) : `${API_BASE}/uploads/album-art/blinding-lights.jpg`}
                           alt={currentSong.title}
                         />
                       </div>
@@ -961,7 +967,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                     const isLiked = likedSongIds.has(song._id);
                     const artSrc = song.albumArtUrl
                       ? (song.albumArtUrl.startsWith('http') ? song.albumArtUrl : `${API_BASE}${song.albumArtUrl}`)
-                      : '/uploads/album-art/blinding-lights.jpg';
+                      : `${API_BASE}/uploads/album-art/blinding-lights.jpg`;
 
                     return (
                       <div
@@ -1021,7 +1027,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                   const isLiked = likedSongIds.has(song._id);
                   const artSrc = song.albumArtUrl
                     ? (song.albumArtUrl.startsWith('http') ? song.albumArtUrl : `${API_BASE}${song.albumArtUrl}`)
-                    : '/uploads/album-art/blinding-lights.jpg';
+                    : `${API_BASE}/uploads/album-art/blinding-lights.jpg`;
 
                   return (
                     <div
@@ -1172,7 +1178,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                     const isLiked = likedSongIds.has(song._id);
                     const artSrc = song.albumArtUrl
                       ? (song.albumArtUrl.startsWith('http') ? song.albumArtUrl : `${API_BASE}${song.albumArtUrl}`)
-                      : '/uploads/album-art/blinding-lights.jpg';
+                      : `${API_BASE}/uploads/album-art/blinding-lights.jpg`;
 
                     return (
                       <div
@@ -1320,7 +1326,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                       <div key={song._id} className="table-row-track">
                         <span className="table-col-num">{idx + 1}</span>
                         <img
-                          src={song.albumArtUrl ? (song.albumArtUrl.startsWith('http') ? song.albumArtUrl : `${API_BASE}${song.albumArtUrl}`) : '/uploads/album-art/blinding-lights.jpg'}
+                          src={song.albumArtUrl ? (song.albumArtUrl.startsWith('http') ? song.albumArtUrl : `${API_BASE}${song.albumArtUrl}`) : `${API_BASE}/uploads/album-art/blinding-lights.jpg`}
                           alt={song.title}
                           className="table-track-artwork"
                         />
@@ -1373,7 +1379,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                       <div key={`hist-${item._id || idx}`} className="table-row-track">
                         <span className="table-col-num">{idx + 1}</span>
                         <img
-                          src={song.albumArtUrl ? (song.albumArtUrl.startsWith('http') ? song.albumArtUrl : `${API_BASE}${song.albumArtUrl}`) : '/uploads/album-art/blinding-lights.jpg'}
+                          src={song.albumArtUrl ? (song.albumArtUrl.startsWith('http') ? song.albumArtUrl : `${API_BASE}${song.albumArtUrl}`) : `${API_BASE}/uploads/album-art/blinding-lights.jpg`}
                           alt={song.title}
                           className="table-track-artwork"
                         />
@@ -1444,7 +1450,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
                                   ? (roomNowPlaying?.albumArtUrl || currentSong?.albumArtUrl)
                                   : `${API_BASE}${roomNowPlaying?.albumArtUrl || currentSong?.albumArtUrl}`
                               )
-                            : '/uploads/album-art/blinding-lights.jpg'
+                            : `${API_BASE}/uploads/album-art/blinding-lights.jpg`
                         }
                         alt={roomNowPlaying?.title || currentSong?.title || 'Track'}
                         className="rnp-art-image"
@@ -1589,7 +1595,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
               <>
                 <div className={`pill-thumb-wrap ${isPlaying ? 'spin-record' : ''}`}>
                   <img
-                    src={currentSong.albumArtUrl ? (currentSong.albumArtUrl.startsWith('http') ? currentSong.albumArtUrl : `${API_BASE}${currentSong.albumArtUrl}`) : '/uploads/album-art/blinding-lights.jpg'}
+                    src={currentSong.albumArtUrl ? (currentSong.albumArtUrl.startsWith('http') ? currentSong.albumArtUrl : `${API_BASE}${currentSong.albumArtUrl}`) : `${API_BASE}/uploads/album-art/blinding-lights.jpg`}
                     alt={currentSong.title}
                     className="pill-art-img"
                   />
