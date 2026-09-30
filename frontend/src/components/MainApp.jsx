@@ -870,8 +870,53 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
           ==================================================== */}
       <main className="app-full-stage">
 
+        {/* Shimmer Skeleton Loading State */}
+        {loading && (
+          <div className="skeleton-stage animate-fade-in">
+            {/* Shimmer Hero */}
+            <div className="skeleton-hero">
+              <div className="skeleton-shimmer skeleton-sleeve-box" />
+              <div className="skeleton-hero-info">
+                <div className="skeleton-shimmer skeleton-tag-pill" />
+                <div className="skeleton-shimmer skeleton-title-bar" />
+                <div className="skeleton-shimmer skeleton-artist-sub" />
+                <div className="skeleton-btn-row">
+                  <div className="skeleton-shimmer skeleton-btn" />
+                  <div className="skeleton-shimmer skeleton-btn" />
+                </div>
+              </div>
+            </div>
+
+            {/* Shimmer Crates Grid */}
+            <div className="skeleton-shimmer skeleton-section-header" />
+            <div className="skeleton-crate-grid">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton-crate-card">
+                  <div className="skeleton-shimmer skeleton-crate-cover" />
+                  <div className="skeleton-shimmer skeleton-crate-title" />
+                  <div className="skeleton-shimmer skeleton-crate-sub" />
+                </div>
+              ))}
+            </div>
+
+            {/* Shimmer Tracklist Table */}
+            <div className="skeleton-shimmer skeleton-section-header" />
+            <div className="skeleton-table-rows">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="skeleton-track-row">
+                  <div className="skeleton-shimmer skeleton-row-idx" />
+                  <div className="skeleton-shimmer skeleton-row-art" />
+                  <div className="skeleton-shimmer skeleton-row-title-box" />
+                  <div className="skeleton-shimmer skeleton-row-album-box" />
+                  <div className="skeleton-shimmer skeleton-row-time-box" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ----------------- VIEW 1: DISCOVER ----------------- */}
-        {activeTab === 'discover' && (
+        {!loading && activeTab === 'discover' && (
           <div className="view-stage animate-fade-in">
             {/* Editorial Centerpiece: Physical LP Sleeve with Sliding Vinyl Disc */}
             {currentSong && (
@@ -1124,7 +1169,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
         )}
 
         {/* ----------------- VIEW 2: SEARCH ----------------- */}
-        {activeTab === 'search' && (
+        {!loading && activeTab === 'search' && (
           <div className="view-stage animate-fade-in">
             {/* Search Input Bar */}
             <div className="search-deck-hero">
@@ -1228,7 +1273,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
         )}
 
         {/* ----------------- VIEW 3: LIBRARY ----------------- */}
-        {activeTab === 'library' && (
+        {!loading && activeTab === 'library' && (
           selectedPlaylist ? (
             <PlaylistDetailView
               playlist={selectedPlaylist}
@@ -1413,7 +1458,7 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
         )}
 
         {/* ----------------- VIEW 4: LIVE SYNC ROOM ----------------- */}
-        {activeTab === 'sync' && (
+        {!loading && activeTab === 'sync' && (
           <div className="view-stage animate-fade-in">
             <div className="sync-room-hub">
               {/* Top Banner */}
