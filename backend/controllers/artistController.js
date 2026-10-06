@@ -41,7 +41,7 @@ const getArtistById = async (req, res) => {
     }
 };
 
-// Follow artist
+// Toggle follow/unfollow artist
 const followArtist = async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -71,19 +71,22 @@ const followArtist = async (req, res) => {
         );
 
         if (alreadyFollowing) {
-            return res.status(400).json({
-                message: "Already following this artist"
-            });
+            // Unfollow
+            user.followedArtists = user.followedArtists.filter(
+                (artistId) => artistId.toString() !== artist._id.toString()
+            );
+            artist.followers = Math.max(0, artist.followers - 1);
+        } else {
+            // Follow
+            user.followedArtists.push(artist._id);
+            artist.followers += 1;
         }
 
-        user.followedArtists.push(artist._id);
-        artist.followers += 1;
-
-        await user.save();
-        await artist.save();
+        await Promise.all([user.save(), artist.save()]);
 
         res.status(200).json({
-            message: "Artist followed successfully",
+            message: alreadyFollowing ? "Artist unfollowed successfully" : "Artist followed successfully",
+            isFollowing: !alreadyFollowing,
             artist: {
                 id: artist._id,
                 name: artist.name,
@@ -92,7 +95,7 @@ const followArtist = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
-            message: "Failed to follow artist",
+            message: "Failed to update follow status",
             error: error.message
         });
     }
