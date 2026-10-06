@@ -625,9 +625,17 @@ export default function MainApp({ currentUser, onBackToLanding, onLogout, active
       });
       if (res.ok) {
         const data = await res.json();
-        setFollowedArtistIds((prev) => new Set([...prev, artistId]));
+        setFollowedArtistIds((prev) => {
+          const next = new Set(prev);
+          if (data.isFollowing) {
+            next.add(artistId);
+          } else {
+            next.delete(artistId);
+          }
+          return next;
+        });
         setArtists((prev) =>
-          prev.map((a) => (a._id === artistId ? { ...a, followers: data.artist.followers } : a))
+          prev.map((a) => (a._id === artistId ? { ...a, followers: data.artist?.followers ?? a.followers } : a))
         );
       }
     } catch (err) {
