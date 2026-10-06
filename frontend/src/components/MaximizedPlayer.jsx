@@ -10,9 +10,7 @@ import {
   Heart,
   Shuffle,
   Repeat,
-  Sliders,
-  Activity,
-  Disc3
+  Sliders
 } from 'lucide-react';
 import { SOUNDSCAPES } from '../data/themes';
 
@@ -373,17 +371,7 @@ export default function MaximizedPlayer({
             </div>
           </div>
 
-          {/* Telemetry chips */}
-          <div className="editorial-telemetry-box">
-            <div className="telemetry-chip">
-              <Activity size={14} style={{ color: theme.color }} />
-              <span>FLAC Lossless 24-Bit / 96kHz</span>
-            </div>
-            <div className="telemetry-chip">
-              <Disc3 size={14} style={{ color: theme.color }} />
-              <span>Vinyl 33⅓ RPM</span>
-            </div>
-          </div>
+
         </section>
 
         {/* RIGHT: Album art top + live graph filling rest */}
